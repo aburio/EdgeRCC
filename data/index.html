@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+
+    <!-- Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <title>EdgeRCC</title>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <header class="container-md">
+        <nav class="navbar navbar-light bg-none px-sm-5">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">EdgeRCC</a>
+            </div>
+        </nav>
+    </header>
+    <main class="container-md mt-5" style="min-height: 100%;">
+        <section id="upload">
+            <form class="row justify-content-center" method='POST' action='/update' enctype='multipart/form-data'>
+                <div class="col-md-6 p-3">
+                    <div class="input-group">
+                        <label class="input-group-text" for="formFile">Bin file</label>
+                        <input class="form-control" type="file" id="formFile" name="update">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
+    <footer class="container-md mt-auto mb-3">
+        <div class="row justify-content-center">
+            <div class="col-auto align-self-end">
+                <a href="https://github.com/aburio/EdgeRCC" >EdgeRCC</a> - <a href="https://www.abur.io">aburio</a> 
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
