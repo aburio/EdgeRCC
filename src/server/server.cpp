@@ -43,6 +43,83 @@ void server_init(const String local_hostname, bool OTA)
                       }
                     });
 
+  server.on("/function", []()
+            {
+              String param_name = server.arg("param");
+              String param_value = server.arg("value");
+
+              if (server.method() == HTTP_POST && param_name == "front-cabine")
+              {
+                if (param_value == "on")
+                {
+                  server.sendHeader("Connection", "close");
+                  server.send(200, "text/plain", "Success");
+                  return;
+                }
+                else if (param_value == "off")
+                {
+                  server.sendHeader("Connection", "close");
+                  server.send(200, "text/plain", "Success");
+                  return;
+                }
+
+                server.sendHeader("Connection", "close");
+                server.send(400, "text/plain", "Bad request !");
+              }
+              else
+              {
+                server.sendHeader("Connection", "close");
+                server.send(200, "text/plain", "GPIO X value : digitalRead(X)");
+              }
+            });
+
+  server.on("/motor", []()
+            {
+              String param_name = server.arg("param");
+              String param_value = server.arg("value");
+
+              if (server.method() == HTTP_POST)
+              {
+                if (param_name == "direction")
+                {
+                  if (param_value == "forward")
+                  {
+                    digitalWrite(INPUT1_PIN, HIGH);
+                    digitalWrite(INPUT2_PIN, LOW);
+                    server.sendHeader("Connection", "close");
+                    server.send(200, "text/plain", "Success");
+                    return;
+                  }
+                  else if (param_value == "stop")
+                  {
+                    digitalWrite(INPUT1_PIN, LOW);
+                    digitalWrite(INPUT2_PIN, LOW);
+                    server.sendHeader("Connection", "close");
+                    server.send(200, "text/plain", "Success");
+                    return;
+                  }
+                  else if (param_value == "backward")
+                  {
+                    digitalWrite(INPUT1_PIN, LOW);
+                    digitalWrite(INPUT2_PIN, HIGH);
+                    server.sendHeader("Connection", "close");
+                    server.send(200, "text/plain", "Success");
+                    return; 
+                  }
+                }
+                else if (param_name == "traction")
+                {
+                  ledcWrite(0, param_value.toInt());
+                  server.sendHeader("Connection", "close");
+                  server.send(200, "text/plain", "Success");
+                  return;
+                }
+
+                server.sendHeader("Connection", "close");
+                server.send(400, "text/plain", "Bad request !");
+              }
+            });
+
   server.on(
       "/update", HTTP_POST,
       []()

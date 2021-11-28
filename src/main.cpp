@@ -1,6 +1,7 @@
 #include "bsp.h"
 #include "user_wifi.h"
 
+#include "motor/motor.h"
 #include "server/server.h"
 #include "wifi/wifi.h"
 
@@ -19,6 +20,7 @@ void setup(){
   }
 
   // init
+  motor_init(PWM_PIN, INPUT1_PIN, INPUT2_PIN);
   wifi_init(SSID, PASSWORD);
   server_init("cc6505", true);
 

@@ -25,7 +25,45 @@
             </div>
         </nav>
     </header>
-    <main class="container-md mt-5" style="min-height: 100%;">
+    <main class="container-md mt-5">
+        <section id="control" class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 p-3">
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)" autocomplete="off" id="forward">
+                        <label class="btn btn-outline-primary" for="forward">AV</label>
+                      
+                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)" autocomplete="off" id="stop" checked>
+                        <label class="btn btn-outline-primary" for="stop">STOP</label>
+                      
+                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)" autocomplete="off" id="backward">
+                        <label class="btn btn-outline-primary" for="backward">AR</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-6 p-3">
+                    <label for="traction" class="form-label">Traction</label>
+                    <input type="range" class="form-range" onchange="motorRequest(this)" value="0" max="65535" id="traction">
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-6 p-3">
+                    <div class="form-check form-switch form-check-inline">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch" id="front-cabine">
+                        <label class="form-check-label" for="front-cabine">Cabine AV</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch" id="rear-cabine">
+                        <label class="form-check-label" for="rear-cabine">Cabine AR</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch" id="red-light">
+                        <label class="form-check-label" for="red-light">Feux Rouge</label>
+                    </div>
+                </div>
+            </div>
+        </section>
         <section id="upload">
             <form class="row justify-content-center" method='POST' action='/update' enctype='multipart/form-data'>
                 <div class="col-md-6 p-3">
@@ -45,6 +83,62 @@
             </div>
         </div>
     </footer>
+    <script defer async>
+        var httpRequest;
+
+        function functionRequest(element) {
+            httpRequest = new XMLHttpRequest();
+        
+            if (!httpRequest) {
+              alert('Error : unable to open a XMLHTTP connection');
+              return false;
+            }
+
+            httpRequest.onreadystatechange = alertContents;
+            httpRequest.open('POST', 'function');
+            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            if (element.checked)
+            {
+                httpRequest.send("param=" + element.id + "&value=on");
+            }
+            else
+            {
+                httpRequest.send("param=" + element.id + "value=off");
+            }
+        }
+
+        function motorRequest(element) {
+            httpRequest = new XMLHttpRequest();
+        
+            if (!httpRequest) {
+              alert('Error : unable to open a XMLHTTP connection');
+              return false;
+            }
+
+            httpRequest.onreadystatechange = alertContents;
+            httpRequest.open('POST', 'motor');
+            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            if (element.id !== "traction" && element.checked)
+            {
+                httpRequest.send("param=direction&value=" + element.id);
+            }
+            else if (element.id === "traction")
+            {
+                httpRequest.send("param=traction&value=" + element.value);
+                console.log("Traction value =" + element.value);
+            }
+        }
+
+        function alertContents() {
+            if (httpRequest.readyState === XMLHttpRequest.DONE) {
+              if (httpRequest.status !== 200) {
+                alert('Error - ' + httpRequest.status + ' : ' + httpRequest.responseText);
+              }
+            }
+        }
+    </script>
 </body>
 
 </html>
