@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/favicon-180x180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
 
@@ -30,13 +30,16 @@
             <div class="row justify-content-center">
                 <div class="col-md-6 p-3">
                     <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)" autocomplete="off" id="forward">
+                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
+                            autocomplete="off" id="forward">
                         <label class="btn btn-outline-primary" for="forward">AV</label>
-                      
-                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)" autocomplete="off" id="stop" checked>
+
+                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
+                            autocomplete="off" id="stop" checked>
                         <label class="btn btn-outline-primary" for="stop">STOP</label>
-                      
-                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)" autocomplete="off" id="backward">
+
+                        <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
+                            autocomplete="off" id="backward">
                         <label class="btn btn-outline-primary" for="backward">AR</label>
                     </div>
                 </div>
@@ -44,21 +47,25 @@
             <div class="row justify-content-center">
                 <div class="col-md-6 p-3">
                     <label for="traction" class="form-label">Traction</label>
-                    <input type="range" class="form-range" onchange="motorRequest(this)" value="0" max="65535" id="traction">
+                    <input type="range" class="form-range" onchange="motorRequest(this)" value="0" max="4095"
+                        id="traction">
                 </div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-md-6 p-3">
                     <div class="form-check form-switch form-check-inline">
-                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch" id="front-cabine">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
+                            id="front-cabine">
                         <label class="form-check-label" for="front-cabine">Cabine AV</label>
                     </div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch" id="rear-cabine">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
+                            id="rear-cabine">
                         <label class="form-check-label" for="rear-cabine">Cabine AR</label>
                     </div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch" id="red-light">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
+                            id="red-light">
                         <label class="form-check-label" for="red-light">Feux Rouge</label>
                     </div>
                 </div>
@@ -79,63 +86,71 @@
     <footer class="container-md mt-auto mb-3">
         <div class="row justify-content-center">
             <div class="col-auto align-self-end">
-                <a href="https://github.com/aburio/EdgeRCC" >EdgeRCC</a> - <a href="https://www.abur.io">aburio</a> 
+                <a href="https://github.com/aburio/EdgeRCC">EdgeRCC</a> - <a href="https://www.abur.io">aburio</a>
             </div>
         </div>
     </footer>
     <script defer async>
-        var httpRequest;
+        const socket = new WebSocket('ws://' + window.location.host + '/ws');
+
+        socket.addEventListener('message', function (event) {
+            console.log('server response : ', event.data);
+        });
 
         function functionRequest(element) {
-            httpRequest = new XMLHttpRequest();
-        
-            if (!httpRequest) {
-              alert('Error : unable to open a XMLHTTP connection');
-              return false;
+            var json = {};
+            
+            if (socket.readyState !== socket.OPEN) {
+                element.checked = false;
+                alert('Error : socket connexion is closed.\nReload the page !');
+                return false;
             }
 
-            httpRequest.onreadystatechange = alertContents;
-            httpRequest.open('POST', 'function');
-            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-            if (element.checked)
-            {
-                httpRequest.send("param=" + element.id + "&value=on");
-            }
-            else
-            {
-                httpRequest.send("param=" + element.id + "value=off");
-            }
+            json["function"] = String(element.id)
+            json["value"] = Number(element.checked);
+            socket.send(JSON.stringify(json, null, 2));
+            return true;
         }
 
         function motorRequest(element) {
-            httpRequest = new XMLHttpRequest();
-        
-            if (!httpRequest) {
-              alert('Error : unable to open a XMLHTTP connection');
-              return false;
+            var json = {};
+            
+            if (socket.readyState !== socket.OPEN) {
+                element.checked = false;
+                alert('Error : socket connexion is closed.\nReload the page !');
+                return false;
             }
 
-            httpRequest.onreadystatechange = alertContents;
-            httpRequest.open('POST', 'motor');
-            httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            if (element.id !== "traction" && element.checked) {
+                json["function"] = String("direction")
 
-            if (element.id !== "traction" && element.checked)
-            {
-                httpRequest.send("param=direction&value=" + element.id);
+                if (element.id === "forward")
+                {
+                    json["value"] = Number(1);
+                }
+                else if (element.id === "backward")
+                {
+                    json["value"] = Number(-1);
+                }
+                else
+                {
+                    json["value"] = Number(0);
+                }
             }
-            else if (element.id === "traction")
-            {
-                httpRequest.send("param=traction&value=" + element.value);
-                console.log("Traction value =" + element.value);
+            else if (element.id === "traction") {
+                json["function"] = String(element.id)
+                json["value"] = Number(element.value);
             }
+
+            socket.send(JSON.stringify(json, null, 2));
+            return true;
         }
 
         function alertContents() {
             if (httpRequest.readyState === XMLHttpRequest.DONE) {
-              if (httpRequest.status !== 200) {
-                alert('Error - ' + httpRequest.status + ' : ' + httpRequest.responseText);
-              }
+                if (httpRequest.status !== 200) {
+                    alert('Error - ' + httpRequest.status + ' : ' + httpRequest.responseText);
+                }
             }
         }
     </script>
