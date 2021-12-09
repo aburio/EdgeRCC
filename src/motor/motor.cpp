@@ -11,7 +11,7 @@ void motor_init(const uint8_t pwn_pin, const uint8_t input1_pin, const uint8_t i
     digitalWrite(input1_pin, LOW);
     pinMode(input2_pin, OUTPUT);
     digitalWrite(input1_pin, LOW);
-    ledcSetup(0, 50, 16);
+    ledcSetup(0, 150, 12);
     ledcAttachPin(pwn_pin ,0);
 }
 
