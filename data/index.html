@@ -29,7 +29,7 @@
         <section id="control" class="container">
             <div class="row justify-content-center">
                 <div class="col-md-6 p-3">
-                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                    <div class="btn-group d-flex" role="group" aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
                             autocomplete="off" id="forward">
                         <label class="btn btn-outline-primary" for="forward">AV</label>
@@ -52,21 +52,40 @@
                 </div>
             </div>
             <div class="row justify-content-center">
-                <div class="col-md-6 p-3">
+                <div class="col-md-3 p-3">
+                    <h3>Avant</h3>
                     <div class="form-check form-switch form-check-inline">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="front-cabine">
-                        <label class="form-check-label" for="front-cabine">Cabine AV</label>
+                            id="front-cab">
+                        <label class="form-check-label" for="front-cab">Cabine</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="rear-cabine">
-                        <label class="form-check-label" for="rear-cabine">Cabine AR</label>
+                            id="front-white">
+                        <label class="form-check-label" for="front-white">Feux Blanc</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="red-light">
-                        <label class="form-check-label" for="red-light">Feux Rouge</label>
+                            id="front-red">
+                        <label class="form-check-label" for="front-red">Feux Rouge</label>
+                    </div>
+                </div>
+                <div class="col-md-3 p-3">
+                    <h3>Arrière</h3>
+                    <div class="form-check form-switch form-check-inline">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
+                            id="rear-cab">
+                        <label class="form-check-label" for="rear-cab">Cabine</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
+                            id="rear-white">
+                        <label class="form-check-label" for="rear-white">Feux Blanc</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
+                            id="rear-red">
+                        <label class="form-check-label" for="rear-red">Feux Rouge</label>
                     </div>
                 </div>
             </div>
