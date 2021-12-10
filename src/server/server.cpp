@@ -248,5 +248,29 @@ void socket_message_parser(String message)
     {
       ledcWrite(0, obj.getMember("value"));
     }
+    else if (obj.getMember("function") == "front-cab")
+    {
+      digitalWrite(FRONT_CAB, !obj.getMember("value"));
+    }
+    else if (obj.getMember("function") == "front-white")
+    {
+      digitalWrite(FRONT_WHITE, !obj.getMember("value"));
+    }
+    else if (obj.getMember("function") == "front-red")
+    {
+      digitalWrite(FRONT_RED, !obj.getMember("value"));
+    }
+    else if (obj.getMember("function") == "rear-cab")
+    {
+      digitalWrite(REAR_CAB, !obj.getMember("value"));
+    }
+    else if (obj.getMember("function") == "rear-white")
+    {
+      digitalWrite(REAR_WHITE, !obj.getMember("value"));
+    }
+    else if (obj.getMember("function") == "rear-red")
+    {
+      digitalWrite(REAR_RED, !obj.getMember("value"));
+    }
   }
 }
