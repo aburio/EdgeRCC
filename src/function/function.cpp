@@ -5,7 +5,7 @@
 /* private functions prototypes */
 
 /* public functions */
-void function_init()
+void functionInit()
 {
     pinMode(FRONT_CAB, OUTPUT_OPEN_DRAIN);
     digitalWrite(FRONT_CAB, 1);
@@ -21,7 +21,7 @@ void function_init()
     digitalWrite(REAR_RED, 1);
 }
 
-void function_task(void *pvParameters)
+void functionTask(void *pvParameters)
 {
     vTaskDelete(NULL);
 }

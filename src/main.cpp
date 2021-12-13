@@ -23,9 +23,9 @@ void setup(){
 
   // init
   controllerInit();
-  function_init();
+  functionInit();
   motorInit(PWM_PIN, 150, 7, INPUT1_PIN, INPUT2_PIN);
-  wifi_init(SSID, PASSWORD);
+  wifiInit(SSID, PASSWORD);
   serverInit("cc6505", true);
 
   // task core 0
@@ -34,7 +34,7 @@ void setup(){
 
   // task core 1
   xTaskCreatePinnedToCore(motorTask, "motorTask", 2048, NULL, 1, NULL, 1);
-  xTaskCreatePinnedToCore(wifi_task, "wifiTask", 2048, NULL, 1, NULL, 1);
+  xTaskCreatePinnedToCore(wifiTask, "wifiTask", 2048, NULL, 1, NULL, 1);
 }
 
 /**

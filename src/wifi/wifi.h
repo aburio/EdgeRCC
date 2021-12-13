@@ -3,7 +3,7 @@
 
 #include "bsp.h"
 
-void wifi_init(const String ssid, const String password);
-void wifi_task(void *pvParameters);
+void wifiInit(const String ssid, const String password);
+void wifiTask(void *pvParameters);
 
 #endif

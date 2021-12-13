@@ -3,7 +3,7 @@
 
 #include "bsp.h"
 
-void function_init();
-void function_task(void *pvParameters);
+void functionInit();
+void functionTask(void *pvParameters);
 
 #endif

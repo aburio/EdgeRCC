@@ -7,7 +7,7 @@
 /* private functions prototypes */
 
 /* public functions */
-void wifi_init(const String ssid, const String password)
+void wifiInit(const String ssid, const String password)
 {
     WiFi.mode(WIFI_STA);
     WiFi.setHostname("Open-Loco");
@@ -16,7 +16,7 @@ void wifi_init(const String ssid, const String password)
     log_v("wifi_init : init done");
 }
 
-void wifi_task(void *pvParameters)
+void wifiTask(void *pvParameters)
 {
     bool wifi_connected = false;
     wl_status_t wifi_status = WiFi.status();
