@@ -20,8 +20,9 @@
 <body class="d-flex flex-column min-vh-100">
     <header class="container-md">
         <nav class="navbar navbar-light bg-none px-sm-5">
-            <div class="container-fluid">
+            <div class="container-fluid justify-content-between">
                 <a class="navbar-brand" href="#">EdgeRCC</a>
+                <div><span>Socket : </span><span id="socket-open" class="badge bg-success align-text-bottom d-none">Open</span><span id="socket-close" class="badge bg-secondary align-text-bottom">Close</span></div>
             </div>
         </nav>
     </header>
@@ -31,15 +32,15 @@
                 <div class="col-md-6 p-3">
                     <div class="btn-group d-flex" role="group" aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
-                            autocomplete="off" id="forward">
+                            autocomplete="off" id="forward" disabled>
                         <label class="btn btn-outline-primary" for="forward">AV</label>
 
                         <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
-                            autocomplete="off" id="stop" checked>
+                            autocomplete="off" id="stop" checked disabled>
                         <label class="btn btn-outline-primary" for="stop">STOP</label>
 
                         <input type="radio" class="btn-check" name="btnradio" onchange="motorRequest(this)"
-                            autocomplete="off" id="backward">
+                            autocomplete="off" id="backward" disabled>
                         <label class="btn btn-outline-primary" for="backward">AR</label>
                     </div>
                 </div>
@@ -47,8 +48,7 @@
             <div class="row justify-content-center">
                 <div class="col-md-6 p-3">
                     <label for="traction" class="form-label">Traction</label>
-                    <input type="range" class="form-range" onchange="motorRequest(this)" value="0" max="4095"
-                        id="traction">
+                    <input type="range" class="form-range" onchange="motorRequest(this)" value="24" max="127" step="1" id="traction" disabled>
                 </div>
             </div>
             <div class="row justify-content-center">
@@ -56,17 +56,17 @@
                     <h3>Avant</h3>
                     <div class="form-check form-switch form-check-inline">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="front-cab">
+                            id="front-cab" disabled>
                         <label class="form-check-label" for="front-cab">Cabine</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="front-white">
+                            id="front-white" disabled>
                         <label class="form-check-label" for="front-white">Feux Blanc</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="front-red">
+                            id="front-red" disabled>
                         <label class="form-check-label" for="front-red">Feux Rouge</label>
                     </div>
                 </div>
@@ -74,17 +74,17 @@
                     <h3>Arrière</h3>
                     <div class="form-check form-switch form-check-inline">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="rear-cab">
+                            id="rear-cab" disabled>
                         <label class="form-check-label" for="rear-cab">Cabine</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="rear-white">
+                            id="rear-white" disabled>
                         <label class="form-check-label" for="rear-white">Feux Blanc</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" onchange="functionRequest(this)" role="switch"
-                            id="rear-red">
+                            id="rear-red" disabled>
                         <label class="form-check-label" for="rear-red">Feux Rouge</label>
                     </div>
                 </div>
@@ -110,16 +110,44 @@
         </div>
     </footer>
     <script defer async>
-        const socket = new WebSocket('ws://' + window.location.host + '/ws');
+        let ws;
 
-        socket.addEventListener('message', function (event) {
-            console.log('server response : ', event.data);
+        window.addEventListener("DOMContentLoaded", (event) => {
+            websocket();
         });
+
+        function disableControl(enable) {
+            var inputs = document.getElementsByTagName("input"); 
+            for (var i = 0; i < inputs.length; i++) { 
+                inputs[i].disabled = enable;
+            }
+        }
+
+        function websocket() {
+            ws = new WebSocket('ws://' + 'cc6505.local' + '/ws');
+
+            ws.onopen = function(event) {
+                document.getElementById("socket-close").classList.add("d-none");
+                document.getElementById("socket-open").classList.remove("d-none");
+                disableControl(false);
+            };
+
+            ws.onmessage = function(event) {
+                console.log('server response : ', event.data);
+            };
+
+            ws.onclose = function(){
+                document.getElementById("socket-open").classList.add("d-none");
+                document.getElementById("socket-close").classList.remove("d-none");
+                disableControl(true);
+                setTimeout(function(){websocket()}, 2000);
+            };
+        }
 
         function functionRequest(element) {
             var json = {};
             
-            if (socket.readyState !== socket.OPEN) {
+            if (ws.readyState !== ws.OPEN) {
                 element.checked = false;
                 alert('Error : socket connexion is closed.\nReload the page !');
                 return false;
@@ -127,14 +155,14 @@
 
             json["function"] = String(element.id)
             json["value"] = Number(element.checked);
-            socket.send(JSON.stringify(json, null, 2));
+            ws.send(JSON.stringify(json, null, 2));
             return true;
         }
 
         function motorRequest(element) {
             var json = {};
             
-            if (socket.readyState !== socket.OPEN) {
+            if (ws.readyState !== ws.OPEN) {
                 element.checked = false;
                 alert('Error : socket connexion is closed.\nReload the page !');
                 return false;
@@ -161,7 +189,7 @@
                 json["value"] = Number(element.value);
             }
 
-            socket.send(JSON.stringify(json, null, 2));
+            ws.send(JSON.stringify(json, null, 2));
             return true;
         }
 

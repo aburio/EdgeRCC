@@ -9,30 +9,32 @@
 #endif
 #include <Update.h>
 
+#include "controller/controller.h"
+
 /* local types & variables */
 AsyncWebServer server(80);
 AsyncWebSocket socket("/ws");
 bool reboot = false;
 
 /* private functions prototypes */
-void request_file_upload_start(AsyncWebServerRequest *request, const String filename, size_t index, uint8_t *data, size_t len, bool final);
-void request_file_upload_end(AsyncWebServerRequest *request);
-void request_not_found(AsyncWebServerRequest *request);
-void socket_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-void socket_message_parser(String message);
+void requestFileUploadStart(AsyncWebServerRequest *request, const String filename, size_t index, uint8_t *data, size_t len, bool final);
+void requestFileUploadEnd(AsyncWebServerRequest *request);
+void requestNotFound(AsyncWebServerRequest *request);
+void socketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+void socketMessageParser(String message);
 
 /* public functions */
-void server_init(const String local_hostname, bool OTA)
+void serverInit(const String local_hostname, bool OTA)
 {
   // Filesystem
   FILESYSTEM.begin();
 
   // Server
-  socket.onEvent(socket_event);
+  socket.onEvent(socketEvent);
   server.addHandler(&socket);
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-  server.onNotFound(request_not_found);
-  server.on("/update", HTTP_POST, request_file_upload_end, request_file_upload_start);
+  server.onNotFound(requestNotFound);
+  server.on("/update", HTTP_POST, requestFileUploadEnd, requestFileUploadStart);
   server.begin();
 
   // MDNS
@@ -40,7 +42,7 @@ void server_init(const String local_hostname, bool OTA)
   MDNS.addService("http", "tcp", 80);
 }
 
-void server_task(void *pvParameters)
+void serverTask(void *pvParameters)
 {
   for (;;)
   {
@@ -52,14 +54,14 @@ void server_task(void *pvParameters)
       ESP.restart();
     }
 
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(300 / portTICK_PERIOD_MS);
   }
 
   vTaskDelete(NULL);
 }
 
 /* private functions */
-void request_file_upload_start(AsyncWebServerRequest *request, const String filename, size_t index, uint8_t *data, size_t len, bool final)
+void requestFileUploadStart(AsyncWebServerRequest *request, const String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
   uint8_t cmd = U_FLASH;
 
@@ -112,7 +114,7 @@ void request_file_upload_start(AsyncWebServerRequest *request, const String file
   }
 }
 
-void request_file_upload_end(AsyncWebServerRequest *request)
+void requestFileUploadEnd(AsyncWebServerRequest *request)
 {
   reboot = !Update.hasError();
   AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "Please wait while the device reboots");
@@ -121,12 +123,12 @@ void request_file_upload_end(AsyncWebServerRequest *request)
   request->send(response);
 }
 
-void request_not_found(AsyncWebServerRequest *request)
+void requestNotFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "FileNotFound");
 }
 
-void socket_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+void socketEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
   if (type == WS_EVT_CONNECT)
   {
@@ -172,7 +174,7 @@ void socket_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEvent
           msg += buff;
         }
       }
-      socket_message_parser(msg);
+      socketMessageParser(msg);
       client->text(msg);
     }
     else
@@ -218,37 +220,25 @@ void socket_event(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEvent
   }
 }
 
-void socket_message_parser(String message)
+void socketMessageParser(String message)
 {
   StaticJsonDocument<256> json;
   deserializeJson(json, message);
   JsonObject obj = json.as<JsonObject>();
+  struct controllermessage ctrl_message;
+  extern QueueHandle_t controllerqueue;
 
   if (obj.getMember("function") != NULL)
   {
-    if (obj.getMember("function") == "direction")
-    {
-      if (obj.getMember("value") == 1)
-      {
-        digitalWrite(INPUT1_PIN, HIGH);
-        digitalWrite(INPUT2_PIN, LOW);
-      }
-      else if (obj.getMember("value") == -1)
-      {
-        digitalWrite(INPUT1_PIN, LOW);
-        digitalWrite(INPUT2_PIN, HIGH);
-      }
-      else
-      {
-        digitalWrite(INPUT1_PIN, LOW);
-        digitalWrite(INPUT2_PIN, LOW);
-      }
-    }
-    else if (obj.getMember("function") == "traction")
-    {
-      ledcWrite(0, obj.getMember("value"));
-    }
-    else if (obj.getMember("function") == "front-cab")
+    ctrl_message.function_name = obj.getMember("function").as<String>();
+    ctrl_message.function_value = obj.getMember("value").as<int32_t>();
+
+    log_v("function : %s", ctrl_message.function_name);
+    log_v("value : %u", ctrl_message.function_value);
+
+    xQueueSend(controllerqueue, &ctrl_message, portMAX_DELAY);
+
+    if (obj.getMember("function") == "front-cab")
     {
       digitalWrite(FRONT_CAB, !obj.getMember("value"));
     }

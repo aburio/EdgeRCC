@@ -1,6 +1,7 @@
 #include "bsp.h"
 #include "user_wifi.h"
 
+#include "controller/controller.h"
 #include "function/function.h"
 #include "motor/motor.h"
 #include "server/server.h"
@@ -21,14 +22,19 @@ void setup(){
   }
 
   // init
+  controllerInit();
   function_init();
-  motor_init(PWM_PIN, INPUT1_PIN, INPUT2_PIN);
+  motorInit(PWM_PIN, 150, 7, INPUT1_PIN, INPUT2_PIN);
   wifi_init(SSID, PASSWORD);
-  server_init("cc6505", true);
+  serverInit("cc6505", true);
+
+  // task core 0
+  xTaskCreatePinnedToCore(controllerTask, "controllerTask", 2048, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore(serverTask, "serverTask", 32768, NULL, 1, NULL, 0);
 
   // task core 1
-  xTaskCreatePinnedToCore(wifi_task, "WifiTask", 2048, NULL, 1, NULL, 1);
-  xTaskCreatePinnedToCore(server_task, "ServerTask", 32768, NULL, 1, NULL, 1);
+  xTaskCreatePinnedToCore(motorTask, "motorTask", 2048, NULL, 1, NULL, 1);
+  xTaskCreatePinnedToCore(wifi_task, "wifiTask", 2048, NULL, 1, NULL, 1);
 }
 
 /**

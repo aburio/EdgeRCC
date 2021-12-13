@@ -3,7 +3,7 @@
 
 #include "bsp.h"
 
-void server_init(const String local_hostname, bool OTA);
-void server_task(void *pvParameters);
+void serverInit(const String local_hostname, bool OTA);
+void serverTask(void *pvParameters);
 
 #endif
